@@ -44,7 +44,7 @@ func handleAssets(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content Type", "text/javascript")
 
 		for _, script := range scripts {
-			fmt.Fprint(w, script)
+			fmt.Fprint(w, script+"\n\n")
 		}
 	}
 }
