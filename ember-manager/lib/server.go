@@ -46,45 +46,16 @@ func handleAssets(w http.ResponseWriter, r *http.Request) {
 		for _, script := range scripts {
 			fmt.Fprint(w, script+"\n\n")
 		}
-	}
-}
 
-type Client struct {
-	id       int
-	conn     *websocket.Conn
-	reloadCh chan bool
-}
-
-func (c *Client) Listen() {
-	for {
-		select {
-		case <-c.reloadCh:
-			c.conn.Write([]byte("RELOAD"))
-			c.conn.Close()
-			delete(clients, c.id)
 		}
 	}
-}
-
-var clientId = 0
-var clients map[int]*Client
-
-func createClient(ws *websocket.Conn) {
-	log.Println(Color("[ws]", "yellow"), "Client connected")
-
-	client := Client{clientId, ws, make(chan bool)}
-	clients[client.id] = &client
-	clientId++
-
-	client.Listen()
 }
 
 func StartServer(port string, c chan map[string]string) {
 	log.Println(Color("[server]", "green"), "Starting server on port", port)
 
-	clients = make(map[int]*Client)
 
-	http.Handle("/reload/", websocket.Handler(createClient))
+	http.Handle("/reload/", websocket.Handler(CreateClient))
 
 	http.HandleFunc("/assets/", handleAssets)
 	http.HandleFunc("/", handleIndex)
