@@ -1,7 +1,9 @@
 package lib
 
 import (
+	"encoding/json"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,4 +29,31 @@ func GetJS(dir string) map[string]string {
 	})
 
 	return files
+}
+
+func GetVendorJS() (map[string]string, error) {
+	file, err := os.Open("vendor_config.json")
+	if err != nil {
+		log.Fatal("vendor_config.json file needed")
+	}
+	defer file.Close()
+
+	config := make(map[string]string)
+	if err = json.NewDecoder(file).Decode(&config); err != nil {
+		log.Fatal("error reading vendor_config.json", err)
+	}
+
+	dir := "vendor/"
+	vendors := make(map[string]string)
+
+	for vendor, path := range config {
+		file, err := ioutil.ReadFile(filepath.Join(dir, path))
+		if err != nil {
+			log.Fatal("error reading vendor file:", vendor, err)
+		}
+
+		vendors[vendor] = string(file)
+	}
+
+	return vendors, err
 }

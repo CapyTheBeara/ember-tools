@@ -10,6 +10,7 @@ import (
 )
 
 var scripts map[string]string
+var vendorScripts map[string]string
 
 const reloadScript = `
 
@@ -23,8 +24,6 @@ const reloadScript = `
     livereloadWebSocket.onopen = function(x) { console.log('[ws] Connection opened', new Date()); };
     livereloadWebSocket.onclose = function() { console.log('[ws] closing'); };
     livereloadWebSocket.onerror = function(err) { console.log('[ws] error', err); };
-
-    window.define = function(){};
 </script>
 `
 
@@ -46,7 +45,11 @@ func handleAssets(w http.ResponseWriter, r *http.Request) {
 		for _, script := range scripts {
 			fmt.Fprint(w, script+"\n\n")
 		}
+	} else if file == "vendor.js" {
+		w.Header().Set("Content Type", "text/javascript")
 
+		for _, vendor := range vendorScripts {
+			fmt.Fprint(w, vendor+"\n\n")
 		}
 	}
 }
@@ -54,6 +57,7 @@ func handleAssets(w http.ResponseWriter, r *http.Request) {
 func StartServer(port string, c chan map[string]string) {
 	log.Println(Color("[server]", "green"), "Starting server on port", port)
 
+	vendorScripts, _ = GetVendorJS()
 
 	http.Handle("/reload/", websocket.Handler(CreateClient))
 

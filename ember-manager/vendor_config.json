@@ -1,0 +1,8 @@
+{
+  "loader": "loader/loader.js",
+  "jquery": "jquery/dist/jquery.js",
+  "handlebars": "handlebars/handlebars.js",
+  "ember":  "ember/ember.js",
+  "app-shims.js": "ember-cli-shims/app-shims.js",
+  "ember-resolver": "ember-resolver/dist/modules/ember-resolver.js"
+}

@@ -10,6 +10,9 @@ import (
 )
 
 var jsCompilerSource map[string]string
+
+// TODO - handle concurrency issues
+// http://blog.golang.org/go-maps-in-action
 var jsSource map[string]string
 
 func compileAll(dirs []string, fileType string, callback func(string, chan lib.CommandRes), c chan lib.CommandRes) {
@@ -36,7 +39,7 @@ func main() {
 	es6Transpiler := lib.CommandFn("node", "-e", jsCompilerSource["es6-transpile"])
 
 	// TODO - recursively watch folders
-	jsDirs := []string{"app/controllers", "app/models"}
+	jsDirs := []string{"app", "app/controllers", "app/models", "app/routes"}
 
 	jsC := make(chan lib.CommandRes)
 	compileAll(jsDirs, "js", es6Transpiler, jsC)
