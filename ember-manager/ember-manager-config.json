@@ -1,0 +1,10 @@
+{
+  "vendor": [
+    "loader/loader.js",
+    "jquery/dist/jquery.js",
+    "handlebars/handlebars.js",
+    "ember/ember.js",
+    "ember-cli-shims/app-shims.js",
+    "ember-resolver/dist/modules/ember-resolver.js"
+  ]
+}

@@ -31,29 +31,28 @@ func GetJS(dir string) map[string]string {
 	return files
 }
 
-func GetVendorJS() (map[string]string, error) {
-	file, err := os.Open("vendor_config.json")
+func GetVendorJS() (vendorScripts []string, err error) {
+	file, err := os.Open("ember-manager-config.json")
 	if err != nil {
 		log.Fatal("vendor_config.json file needed")
 	}
 	defer file.Close()
 
-	config := make(map[string]string)
+	config := make(map[string]interface{})
 	if err = json.NewDecoder(file).Decode(&config); err != nil {
 		log.Fatal("error reading vendor_config.json", err)
 	}
 
 	dir := "vendor/"
-	vendors := make(map[string]string)
 
-	for vendor, path := range config {
-		file, err := ioutil.ReadFile(filepath.Join(dir, path))
+	for vendor, path := range config["vendor"].([]interface{}) {
+		file, err := ioutil.ReadFile(filepath.Join(dir, path.(string)))
 		if err != nil {
 			log.Fatal("error reading vendor file:", vendor, err)
 		}
 
-		vendors[vendor] = string(file)
+		vendorScripts = append(vendorScripts, string(file))
 	}
 
-	return vendors, err
+	return
 }
