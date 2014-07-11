@@ -37,22 +37,36 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 func handleAssets(w http.ResponseWriter, r *http.Request) {
 	file := r.URL.Path[len("/assets/"):]
 
-	if file == "app.js" {
+	switch file {
+	case "app.js":
 		w.Header().Set("Content Type", "text/javascript")
 
 		for _, script := range scripts {
 			fmt.Fprint(w, script+"\n")
 		}
-	} else if file == "vendor.js" {
+
+	case "vendor.js":
 		w.Header().Set("Content Type", "text/javascript")
 
 		for _, vendor := range vendorScripts {
 			fmt.Fprint(w, vendor+"\n\n")
 		}
+
+	case "app.css":
+		w.Header().Set("Content Type", "text/css")
+		http.ServeFile(w, r, "app/styles/app.css")
 	}
 }
 
-func StartServer(port string, c chan map[string]string) {
+func reloadAllClients() {
+	log.Println(Color("[server]", "green"), "reloading clients")
+
+	for _, client := range clients {
+		client.reloadCh <- true
+	}
+}
+
+func StartServer(port string, c chan map[string]string, reloadC chan File) {
 	log.Println(Color("[server]", "green"), "Starting server on port", port)
 
 	vendorScripts, _ = GetVendorJS()
@@ -66,13 +80,10 @@ func StartServer(port string, c chan map[string]string) {
 		for {
 			select {
 			case js := <-c:
-				log.Println(Color("[server]", "green"), "updated scripts")
 				scripts = js
-
-				for _, client := range clients {
-					client.reloadCh <- true
-				}
-
+				reloadAllClients()
+			case <-reloadC:
+				reloadAllClients()
 			}
 		}
 	}()

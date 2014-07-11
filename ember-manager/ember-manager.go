@@ -37,8 +37,6 @@ func compileAll(dirs []string, fileType string, callback func(string, []byte, ch
 }
 
 func main() {
-	// log.SetFlags(log.Lshortfile | log.Ldate | log.Ltime)
-
 	jsCompilerSource = lib.GetJS("./js")
 	jsSource = make(map[string]string)
 
@@ -51,6 +49,7 @@ func main() {
 	jsC := make(chan lib.File)
 	compileAll([]string{"app"}, "js", es6Transpiler, jsC)
 
+	// Watch files
 	// TODO - recursively watch folders
 	jsDirs := []string{"app", "app/controllers", "app/models", "app/routes"}
 	lib.NewAppWatcher(jsDirs, "js", es6C)
@@ -58,8 +57,11 @@ func main() {
 	hbsC := make(chan lib.File)
 	lib.NewAppWatcher([]string{"app/templates"}, "hbs", hbsC)
 
+	reloadC := make(chan lib.File)
+	lib.NewAppWatcher([]string{"app/styles"}, "css", reloadC)
+
 	serverC := make(chan map[string]string)
-	go lib.StartServer("3000", serverC)
+	go lib.StartServer("3000", serverC, reloadC)
 
 	for {
 		select {

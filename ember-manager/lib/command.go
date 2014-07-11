@@ -9,8 +9,6 @@ import (
 
 func CommandFn(commandName string, args ...string) func(string, []byte, chan File) {
 	return func(path string, input []byte, res chan File) {
-		log.Println(Color("[processing]", "magenta"), path)
-
 		start := time.Now()
 		cmd := exec.Command(commandName, append(args, path, string(input))...)
 
