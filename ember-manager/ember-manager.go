@@ -45,26 +45,25 @@ func main() {
 	es6Transpiler := lib.CommandFn("node", "-e", jsCompilerSource["es6-transpiler"])
 	emberTemplateCompiler := lib.CommandFn("node", "-e", jsCompilerSource["ember-template-compiler"])
 
-	templateC := make(chan lib.File)
-	compileAll([]string{"app/templates"}, "hbs", emberTemplateCompiler, templateC)
+	es6C := make(chan lib.File)
+	compileAll([]string{"app/templates"}, "hbs", emberTemplateCompiler, es6C)
 
 	jsC := make(chan lib.File)
 	compileAll([]string{"app"}, "js", es6Transpiler, jsC)
 
 	// TODO - recursively watch folders
 	jsDirs := []string{"app", "app/controllers", "app/models", "app/routes"}
-	es6C := make(chan lib.File)
 	lib.NewAppWatcher(jsDirs, "js", es6C)
 
-	hbsCC := make(chan lib.File)
-	lib.NewAppWatcher([]string{"app/templates"}, "hbs", hbsCC)
+	hbsC := make(chan lib.File)
+	lib.NewAppWatcher([]string{"app/templates"}, "hbs", hbsC)
 
 	serverC := make(chan map[string]string)
 	go lib.StartServer("3000", serverC)
 
 	for {
 		select {
-		case file := <-hbsCC:
+		case file := <-hbsC:
 			go emberTemplateCompiler(file.Path, file.Content, es6C)
 
 		case file := <-es6C:
