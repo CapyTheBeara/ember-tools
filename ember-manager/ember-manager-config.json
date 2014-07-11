@@ -4,7 +4,9 @@
     "jquery/dist/jquery.js",
     "handlebars/handlebars.js",
     "ember/ember.js",
+    "ember-data/ember-data.js",
     "ember-cli-shims/app-shims.js",
-    "ember-resolver/dist/modules/ember-resolver.js"
+    "ember-resolver/dist/modules/ember-resolver.js",
+    "ember-load-initializers/ember-load-initializers.js"
   ]
 }

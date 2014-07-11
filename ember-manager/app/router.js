@@ -1,11 +1,12 @@
-import Ember from 'ember';
-
 var Router = Ember.Router.extend({
   location: 'hash'
 });
 
 Router.map(function() {
-  this.route('foo');
+  this.resource('todos', { path: '/' }, function() {
+    this.route('active');
+    this.route('completed');
+  });
 });
 
 export default Router;
