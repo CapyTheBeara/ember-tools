@@ -1,10 +1,9 @@
 function foo() {
-  return 'foo';
+  return 'bar';
 }
 
 export default Em.Controller.extend({
-  foo: 1,
-  bar: 21111,
-  baz: "baz"
+  world: 'world',
+  foo: foo.property()
 });
 
