@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"io/ioutil"
 	"log"
 	"strings"
 	"time"
@@ -10,7 +11,7 @@ import (
 
 var lastTime = time.Now()
 
-func NewAppWatcher(paths []string, fileExt string, evtC chan string) {
+func NewAppWatcher(paths []string, fileExt string, evtC chan File) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Fatal(err)
@@ -25,7 +26,13 @@ func NewAppWatcher(paths []string, fileExt string, evtC chan string) {
 				// TODO - watch newly created folders
 				if strings.HasSuffix(evt.Name, fileExt) && now.Sub(lastTime).Seconds() > 0.01 {
 					lastTime = now
-					evtC <- evt.Name
+
+					file, err := ioutil.ReadFile(evt.Name)
+					if err != nil {
+						log.Fatal("watcher error", err)
+					}
+
+					evtC <- File{evt.Name, file, evt}
 				}
 
 			case err := <-watcher.Error:

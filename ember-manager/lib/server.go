@@ -10,7 +10,7 @@ import (
 )
 
 var scripts map[string]string
-var vendorScripts map[string]string
+var vendorScripts []string
 
 const reloadScript = `
 
@@ -43,7 +43,7 @@ func handleAssets(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content Type", "text/javascript")
 
 		for _, script := range scripts {
-			fmt.Fprint(w, script+"\n\n")
+			fmt.Fprint(w, script+"\n")
 		}
 	} else if file == "vendor.js" {
 		w.Header().Set("Content Type", "text/javascript")
