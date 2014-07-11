@@ -64,20 +64,36 @@ func main() {
 	for {
 		select {
 		case file := <-hbsC:
+			if file.IsEmpty() {
+				go func() {
+					es6C <- file
+				}()
+				continue
+			}
 			go emberTemplateCompiler(file.Path, file.Content, es6C)
 
 		case file := <-es6C:
-			// TODO - handle file DELETE events here
 			path := file.Path
 
 			if strings.HasSuffix(path, ".hbs") {
 				path = strings.Replace(path, ".hbs", ".js", 1)
 			}
 
+			if file.IsEmpty() {
+				go func() {
+					jsC <- lib.File{Path: path}
+				}()
+				continue
+			}
+
 			go es6Transpiler(path, file.Content, jsC)
 
-		case res := <-jsC:
-			jsSource[res.Path] = string(res.Content)
+		case file := <-jsC:
+			if file.IsEmpty() {
+				delete(jsSource, file.Path)
+			} else {
+				jsSource[file.Path] = string(file.Content)
+			}
 			serverC <- jsSource
 		}
 	}

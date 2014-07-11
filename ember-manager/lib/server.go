@@ -13,7 +13,6 @@ var scripts map[string]string
 var vendorScripts []string
 
 const reloadScript = `
-
 <script type='text/javascript'>
     var livereloadWebSocket = new WebSocket("ws://localhost:3000/reload/");
     livereloadWebSocket.onmessage = function(msg) {
@@ -32,7 +31,6 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	file = file
 	fmt.Fprintf(w, reloadScript+string(file))
 }
 

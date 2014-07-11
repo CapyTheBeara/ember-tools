@@ -22,14 +22,13 @@ func NewAppWatcher(paths []string, fileExt string, evtC chan File) {
 			select {
 			case evt := <-watcher.Event:
 				now := time.Now()
-
 				// TODO - watch newly created folders
 				if strings.HasSuffix(evt.Name, fileExt) && now.Sub(lastTime).Seconds() > 0.01 {
 					lastTime = now
 
 					file, err := ioutil.ReadFile(evt.Name)
 					if err != nil {
-						log.Fatal("watcher error", err)
+						evtC <- File{evt.Name, []byte{}, evt}
 					}
 
 					evtC <- File{evt.Name, file, evt}
