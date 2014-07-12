@@ -40,25 +40,24 @@ func main() {
 	jsCompilerSource = lib.GetJS("./js")
 	jsSource = make(map[string]string)
 
-	es6Transpiler := lib.CommandFn("node", "-e", jsCompilerSource["es6-transpiler"])
-	emberTemplateCompiler := lib.CommandFn("node", "-e", jsCompilerSource["ember-template-compiler"])
-
 	es6C := make(chan lib.File)
-	compileAll([]string{"app/templates"}, "hbs", emberTemplateCompiler, es6C)
+	processor := lib.Config.Processors[0]
 
-	jsC := make(chan lib.File)
-	compileAll([]string{"app"}, "js", es6Transpiler, jsC)
+	es6Transpiler := lib.CommandFn("node", "-e", jsCompilerSource[processor.Name])
+	// // TODO - recursively watch folders
+	// jsDirs := []string{"app", "app/controllers", "app/models", "app/routes"}
+	lib.NewAppWatcher([]string{processor.Dir}, "js", es6C)
 
-	// Watch files
-	// TODO - recursively watch folders
-	jsDirs := []string{"app", "app/controllers", "app/models", "app/routes"}
-	lib.NewAppWatcher(jsDirs, "js", es6C)
-
+	emberTemplateCompiler := lib.CommandFn("node", "-e", jsCompilerSource["ember-template-compiler"])
 	hbsC := make(chan lib.File)
 	lib.NewAppWatcher([]string{"app/templates"}, "hbs", hbsC)
 
 	reloadC := make(chan lib.File)
 	lib.NewAppWatcher([]string{"app/styles"}, "css", reloadC)
+
+	jsC := make(chan lib.File)
+	compileAll([]string{"app"}, "js", es6Transpiler, jsC)
+	compileAll([]string{"app/templates"}, "hbs", emberTemplateCompiler, es6C)
 
 	serverC := make(chan map[string]string)
 	go lib.StartServer("3000", serverC, reloadC)

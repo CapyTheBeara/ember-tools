@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
@@ -32,27 +31,15 @@ func GetJS(dir string) map[string]string {
 }
 
 func GetVendorJS() (vendorScripts []string, err error) {
-	file, err := os.Open("ember-manager-config.json")
-	if err != nil {
-		log.Fatal("vendor_config.json file needed")
-	}
-	defer file.Close()
-
-	config := make(map[string]interface{})
-	if err = json.NewDecoder(file).Decode(&config); err != nil {
-		log.Fatal("error reading vendor_config.json", err)
-	}
-
 	dir := "vendor/"
 
-	for vendor, path := range config["vendor"].([]interface{}) {
-		file, err := ioutil.ReadFile(filepath.Join(dir, path.(string)))
+	for vendor, path := range Config.Vendors {
+		file, err := ioutil.ReadFile(filepath.Join(dir, path))
 		if err != nil {
 			log.Fatal("error reading vendor file:", vendor, err)
 		}
 
 		vendorScripts = append(vendorScripts, string(file))
 	}
-
 	return
 }

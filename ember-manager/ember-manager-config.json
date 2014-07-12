@@ -1,5 +1,13 @@
 {
-  "vendor": [
+  "processors": [
+    {
+      "name": "es6-transpiler",
+      "dir": "app",
+      "fileType": "js"
+    }
+  ],
+
+  "vendors": [
     "loader/loader.js",
     "jquery/dist/jquery.js",
     "handlebars/handlebars.js",
