@@ -12,17 +12,15 @@ type Command struct {
 	Name     string
 	Args     []string
 	Source   []byte
-	OutCs    []chan *File
 	PathOnly bool
 	NoPipe   bool
 }
 
-func (c *Command) Run(f *File) {
+func (c *Command) Run(f *File) (res *File) {
 	start := time.Now()
 
 	if c.Name == "" {
-		c.OutCs[0] <- &File{}
-		return
+		return &File{Path: "reload"}
 	}
 
 	args := append(c.Args, string(c.Source), f.Path, string(f.Content))
@@ -65,7 +63,6 @@ func (c *Command) Run(f *File) {
 
 		if c.NoPipe {
 			log.Println(Color(string(content), "magenta"))
-			return
 		}
 
 		// TODO - do mo' better
@@ -75,7 +72,7 @@ func (c *Command) Run(f *File) {
 		}
 
 		f.Content = []byte(split[0])
-		ch := c.OutCs[0]
-		ch <- f
+		return f
 	}
+	return &File{}
 }

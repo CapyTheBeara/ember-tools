@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	log.SetFlags(log.Ltime)
+	log.SetFlags(log.Lshortfile | log.Ltime)
 
 	for _, p := range lib.Config.Processors {
 		lib.NewAppWatcher(p)
