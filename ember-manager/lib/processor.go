@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 var MainChan chan *File
@@ -57,7 +58,7 @@ func (p *Processor) makeChans() {
 
 func (p *Processor) makeCommand() {
 	if p.Type == "reload" {
-		p.Command = &Command{OutCs: p.OutCs}
+		p.Command = &Command{}
 	} else if p.Command == nil {
 		dir := "processors"
 
@@ -70,7 +71,6 @@ func (p *Processor) makeCommand() {
 			Name:   "node",
 			Args:   []string{"-e"},
 			Source: f,
-			OutCs:  p.OutCs,
 		}
 	}
 }
@@ -80,13 +80,35 @@ func (p *Processor) listen() {
 		for {
 			select {
 			case file := <-p.InC:
-				go p.Command.Run(file)
+				p.OutCs[0] <- p.Command.Run(file)
 			}
 		}
 	}()
 }
 
 func (p *Processor) sendAllFiles() {
+	var res []*File
+	files := make(chan *File)
+
+	var wg sync.WaitGroup
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func() {
+			for file := range files {
+				res = append(res, p.Command.Run(file))
+			}
+			wg.Done()
+		}()
+
+		go func() {
+			for _, f := range res {
+				if f.Path != "" {
+					p.OutCs[0] <- f
+				}
+			}
+		}()
+	}
+
 	for _, dir := range p.Dirs {
 		filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -97,9 +119,13 @@ func (p *Processor) sendAllFiles() {
 			f.SetContent()
 
 			if !info.IsDir() && p.FileHit(&f) {
-				go p.Command.Run(&f)
+				files <- &f
 			}
+
 			return err
 		})
 	}
+
+	close(files)
+	wg.Wait()
 }
