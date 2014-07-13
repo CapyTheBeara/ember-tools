@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"path"
 	"path/filepath"
 
 	"code.google.com/p/go.net/websocket"
@@ -36,10 +38,15 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleAssets(w http.ResponseWriter, r *http.Request) {
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatal("Could not get current working directory")
+	}
+
 	file := r.URL.Path[len("/assets/"):]
 
 	switch file {
-	case "app.js":
+	case path.Base(wd) + ".js": // TODO - allow override within config file
 		w.Header().Set("Content Type", "text/javascript")
 
 		for _, script := range scripts {
