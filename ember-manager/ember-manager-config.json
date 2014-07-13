@@ -18,6 +18,12 @@
       "type": "reload"
     },
     {
+      "name": "index.html",
+      "dirs": ["app"],
+      "fileExt": "html",
+      "type": "reload"
+    },
+    {
       "name": "jshint",
       "dirs": ["app"],
       "fileExt": "js",
