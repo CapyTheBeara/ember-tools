@@ -9,10 +9,12 @@ import (
 )
 
 type Command struct {
-	Name   string
-	Args   []string
-	Source []byte
-	OutCs  []chan *File
+	Name     string
+	Args     []string
+	Source   []byte
+	OutCs    []chan *File
+	PathOnly bool
+	NoPipe   bool
 }
 
 func (c *Command) Run(f *File) {
@@ -24,6 +26,10 @@ func (c *Command) Run(f *File) {
 	}
 
 	args := append(c.Args, string(c.Source), f.Path, string(f.Content))
+	if c.PathOnly {
+		args = append(c.Args, f.Path)
+	}
+
 	cmd := exec.Command(c.Name, args...)
 
 	stdout, err := cmd.StdoutPipe()
@@ -51,10 +57,16 @@ func (c *Command) Run(f *File) {
 			log.Fatal(err)
 		}
 
-		log.Println(Color("[processor error]", "red"), f.Path, string(msg))
-
+		if len(msg) > 0 {
+			log.Println(Color("[processor error]", "red"), c.Name, f.Path, string(msg))
+		}
 	} else {
 		log.Printf("%s %.2fs for %s\n", Color("[processing]", "magenta"), time.Since(start).Seconds(), f.Path)
+
+		if c.NoPipe {
+			log.Println(Color(string(content), "magenta"))
+			return
+		}
 
 		// TODO - do mo' better
 		split := strings.Split(string(content), "OUTPUT_PATH=")

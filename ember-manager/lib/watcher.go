@@ -7,7 +7,13 @@ import (
 	"code.google.com/p/go.exp/fsnotify"
 )
 
-var lastTime = time.Now()
+var lastTimes map[string]time.Time
+
+var zeroTime = time.Time{}
+
+func init() {
+	lastTimes = make(map[string]time.Time)
+}
 
 func NewAppWatcher(p *Processor) {
 	watcher, err := fsnotify.NewWatcher()
@@ -29,10 +35,11 @@ func NewAppWatcher(p *Processor) {
 			select {
 			case evt := <-watcher.Event:
 				now := time.Now()
-				// TODO - watch newly created folders
 				f := File{Path: evt.Name, Event: evt}
-				if p.FileHit(&f) && now.Sub(lastTime).Seconds() > 0.01 {
-					lastTime = now
+
+				// TODO - watch newly created folders
+				if p.FileHit(&f) && (now.Sub(lastTimes[p.Name]).Seconds() > 0.01 || lastTimes[p.Name] == zeroTime) {
+					lastTimes[p.Name] = now
 					f.SetContent()
 					p.InC <- &f
 				}

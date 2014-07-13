@@ -58,7 +58,7 @@ func (p *Processor) makeChans() {
 func (p *Processor) makeCommand() {
 	if p.Type == "reload" {
 		p.Command = &Command{OutCs: p.OutCs}
-	} else {
+	} else if p.Command == nil {
 		dir := "js"
 
 		f, err := ioutil.ReadFile(filepath.Join(dir, p.Name+".js"))

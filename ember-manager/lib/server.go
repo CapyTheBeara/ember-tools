@@ -92,11 +92,11 @@ func listenForFiles(fileC chan *File) {
 	for {
 		select {
 		case f := <-fileC:
-			if len(f.Content) > 0 {
-
-				scripts[f.Path] = string(f.Content)
-			} else {
+			// TODO - handle by file type
+			if f.IsEmpty() {
 				delete(scripts, f.Path)
+			} else {
+				scripts[f.Path] = string(f.Content)
 			}
 			reloadAllClients()
 		}

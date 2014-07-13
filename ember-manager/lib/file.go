@@ -22,5 +22,4 @@ func (f *File) SetContent() {
 	} else {
 		f.Content = file
 	}
-
 }

@@ -1,4 +1,4 @@
-var compiler = require('ember-template-compiler')
+var compiler = require('ember-template-compiler');
 
 var path = process.argv[1],
     file = process.argv[2],

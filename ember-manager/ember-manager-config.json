@@ -16,6 +16,16 @@
       "dirs": ["app/styles"],
       "fileExt": "css",
       "type": "reload"
+    },
+    {
+      "name": "jshint",
+      "dirs": ["app"],
+      "fileExt": "js",
+      "command": {
+        "name": "jshint",
+        "pathOnly": true,
+        "noPipe": true
+      }
     }
   ],
 
