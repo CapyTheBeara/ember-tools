@@ -8,7 +8,7 @@ import (
 
 type config struct {
 	Processors []*Processor
-	Vendors    []string
+	Vendors    map[string][]string
 }
 
 func (c *config) GetChanFor(name string) (ch chan *File) {

@@ -13,7 +13,8 @@ import (
 )
 
 var scripts map[string]string
-var vendorScripts []string
+var vendorJs []string
+var vendorCss []string
 
 const reloadScript = `
 <script type='text/javascript'>
@@ -56,13 +57,19 @@ func handleAssets(w http.ResponseWriter, r *http.Request) {
 	case "vendor.js":
 		w.Header().Set("Content Type", "text/javascript")
 
-		for _, vendor := range vendorScripts {
+		for _, vendor := range vendorJs {
 			fmt.Fprint(w, vendor+"\n\n")
 		}
 
 	case "app.css":
 		w.Header().Set("Content Type", "text/css")
 		http.ServeFile(w, r, "app/styles/app.css")
+
+	case "vendor.css":
+		w.Header().Set("Content Type", "text/css")
+		for _, css := range vendorCss {
+			fmt.Fprint(w, css+"\n")
+		}
 	}
 }
 
@@ -70,7 +77,9 @@ func StartServer(port string, fileC chan *File) {
 	log.Println(Color("[server]", "green"), "Starting server on port", port)
 
 	scripts = make(map[string]string)
-	vendorScripts, _ = getVendorJS()
+	vendorJs, _ = getVendors("js")
+	vendorCss, _ = getVendors("css")
+
 	go listenForFiles(fileC)
 
 	http.Handle("/reload/", websocket.Handler(CreateClient))
@@ -81,16 +90,16 @@ func StartServer(port string, fileC chan *File) {
 
 }
 
-func getVendorJS() (vendorScripts []string, err error) {
+func getVendors(kind string) (scripts []string, err error) {
 	dir := "vendor/"
 
-	for vendor, path := range Config.Vendors {
+	for vendor, path := range Config.Vendors[kind] {
 		file, err := ioutil.ReadFile(filepath.Join(dir, path))
 		if err != nil {
 			log.Fatal("error reading vendor file:", vendor, err)
 		}
 
-		vendorScripts = append(vendorScripts, string(file))
+		scripts = append(scripts, string(file))
 	}
 	return
 }

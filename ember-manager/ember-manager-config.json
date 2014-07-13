@@ -35,14 +35,20 @@
     }
   ],
 
-  "vendors": [
-    "loader/loader.js",
-    "jquery/dist/jquery.js",
-    "handlebars/handlebars.js",
-    "ember/ember.js",
-    "ember-data/ember-data.js",
-    "ember-cli-shims/app-shims.js",
-    "ember-resolver/dist/modules/ember-resolver.js",
-    "ember-load-initializers/ember-load-initializers.js"
-  ]
+  "vendors": {
+    "js": [
+      "loader/loader.js",
+      "jquery/dist/jquery.js",
+      "handlebars/handlebars.js",
+      "ember/ember.js",
+      "ember-data/ember-data.js",
+      "ember-cli-shims/app-shims.js",
+      "ember-resolver/dist/modules/ember-resolver.js",
+      "ember-load-initializers/ember-load-initializers.js"
+    ],
+    "css": [
+      "bootstrap/dist/css/bootstrap.min.css",
+      "bootstrap/dist/css/bootstrap-theme.min.css"
+    ]
+  }
 }
