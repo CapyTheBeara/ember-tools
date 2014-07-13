@@ -28,7 +28,7 @@ const reloadScript = `
 `
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
-	file, err := ioutil.ReadFile("index.html")
+	file, err := ioutil.ReadFile("app/index.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
