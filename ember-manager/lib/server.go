@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
 
 	"code.google.com/p/go.net/websocket"
 )
@@ -58,36 +59,54 @@ func handleAssets(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func StartServer(port string, fileC chan *File) {
+	log.Println(Color("[server]", "green"), "Starting server on port", port)
+
+	scripts = make(map[string]string)
+	vendorScripts, _ = getVendorJS()
+	go listenForFiles(fileC)
+
+	http.Handle("/reload/", websocket.Handler(CreateClient))
+	http.HandleFunc("/assets/", handleAssets)
+	http.HandleFunc("/", handleIndex)
+
+	http.ListenAndServe(":"+port, nil)
+
+}
+
+func getVendorJS() (vendorScripts []string, err error) {
+	dir := "vendor/"
+
+	for vendor, path := range Config.Vendors {
+		file, err := ioutil.ReadFile(filepath.Join(dir, path))
+		if err != nil {
+			log.Fatal("error reading vendor file:", vendor, err)
+		}
+
+		vendorScripts = append(vendorScripts, string(file))
+	}
+	return
+}
+
+func listenForFiles(fileC chan *File) {
+	for {
+		select {
+		case f := <-fileC:
+			if len(f.Content) > 0 {
+
+				scripts[f.Path] = string(f.Content)
+			} else {
+				delete(scripts, f.Path)
+			}
+			reloadAllClients()
+		}
+	}
+}
+
 func reloadAllClients() {
 	log.Println(Color("[server]", "green"), "reloading clients")
 
 	for _, client := range clients {
 		client.reloadCh <- true
 	}
-}
-
-func StartServer(port string, c chan map[string]string, reloadC chan File) {
-	log.Println(Color("[server]", "green"), "Starting server on port", port)
-
-	vendorScripts, _ = GetVendorJS()
-
-	http.Handle("/reload/", websocket.Handler(CreateClient))
-
-	http.HandleFunc("/assets/", handleAssets)
-	http.HandleFunc("/", handleIndex)
-
-	go func() {
-		for {
-			select {
-			case js := <-c:
-				scripts = js
-				reloadAllClients()
-			case <-reloadC:
-				reloadAllClients()
-			}
-		}
-	}()
-
-	http.ListenAndServe(":"+port, nil)
-
 }
