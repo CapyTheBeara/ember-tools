@@ -1,10 +1,12 @@
-var path = process.argv[1],
+var path = require('path'),
+    Compiler = require("es6-module-transpiler").Compiler;
+
+var filePath = process.argv[1],
     file = process.argv[2];
 
-var Compiler = require("es6-module-transpiler").Compiler;
+var projectName = path.basename(process.cwd()),
+    module = filePath.match(/app\/(.+)\.[^\.]+$/)[1],
+    newPath = path.join(projectName, module),
+    output = (new Compiler(file, newPath)).toAMD();
 
-// TODO - path here should app's name instead of "app"
-var module = path.match(/app\/(.+)\.[^\.]+$/)[1],
-    output = (new Compiler(file, 'app/' + module)).toAMD();
-
-process.stdout.write(output + '//# sourceURL=' + path + '\n');
+process.stdout.write(output + '//# sourceURL=' + newPath + '.js' + '\n');
