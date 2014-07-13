@@ -2,8 +2,20 @@
   "processors": [
     {
       "name": "es6-transpiler",
-      "dir": "app",
-      "fileType": "js"
+      "dirs": ["app"],
+      "fileExt": "js"
+    },
+    {
+      "name": "ember-template-compiler",
+      "dirs": ["app/templates"],
+      "fileExt": "hbs",
+      "pipeTo": ["es6-transpiler"]
+    },
+    {
+      "name": "css",
+      "dirs": ["app/styles"],
+      "fileExt": "css",
+      "type": "reload"
     }
   ],
 
