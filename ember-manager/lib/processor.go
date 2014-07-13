@@ -59,7 +59,7 @@ func (p *Processor) makeCommand() {
 	if p.Type == "reload" {
 		p.Command = &Command{OutCs: p.OutCs}
 	} else if p.Command == nil {
-		dir := "js"
+		dir := "processors"
 
 		f, err := ioutil.ReadFile(filepath.Join(dir, p.Name+".js"))
 		if err != nil {
