@@ -2,6 +2,9 @@ package lib
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 )
 
 var colors = map[string]string{
@@ -34,4 +37,20 @@ var colors = map[string]string{
 
 func Color(text string, color string) string {
 	return fmt.Sprintf("\033[%sm%s\033[0m", colors[color], text)
+}
+
+func GetAllDirs(dirs []string) (all []string) {
+	for _, dir := range dirs {
+		filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if info.IsDir() {
+				all = append(all, path)
+			}
+			return err
+		})
+	}
+	return
 }
