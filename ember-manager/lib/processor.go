@@ -27,6 +27,10 @@ func (p *Processor) FileHit(f *File) bool {
 	return strings.HasSuffix(f.Path, p.FileExt)
 }
 
+func (p *Processor) IsReload() bool {
+	return !p.Command.NoPipe
+}
+
 func (p *Processor) Start() {
 	if len(p.Dirs) == 0 {
 		p.Dirs = []string{"app"}
@@ -80,7 +84,10 @@ func (p *Processor) listen() {
 		for {
 			select {
 			case file := <-p.InC:
-				p.OutCs[0] <- p.Command.Run(file)
+				f := p.Command.Run(file)
+				if p.IsReload() {
+					p.OutCs[0] <- f
+				}
 			}
 		}
 	}()
@@ -98,14 +105,6 @@ func (p *Processor) sendAllFiles() {
 				res = append(res, p.Command.Run(file))
 			}
 			wg.Done()
-		}()
-
-		go func() {
-			for _, f := range res {
-				if f.Path != "" {
-					p.OutCs[0] <- f
-				}
-			}
 		}()
 	}
 
@@ -128,4 +127,12 @@ func (p *Processor) sendAllFiles() {
 
 	close(files)
 	wg.Wait()
+
+	go func() {
+		for _, f := range res {
+			if !f.IsEmpty() {
+				p.OutCs[0] <- f
+			}
+		}
+	}()
 }
