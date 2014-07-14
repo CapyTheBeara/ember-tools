@@ -23,7 +23,7 @@ func (c *config) GetChanFor(name string) (ch chan *File) {
 
 var Config config
 
-func init() {
+func (c *config) Parse() {
 	MainChan = make(chan *File)
 
 	file, err := os.Open("ember-manager-config.json")

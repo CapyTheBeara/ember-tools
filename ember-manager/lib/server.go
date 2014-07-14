@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -12,13 +14,18 @@ import (
 	"code.google.com/p/go.net/websocket"
 )
 
-var scripts map[string]string
-var vendorJs []string
-var vendorCss []string
+var (
+	proxy     *httputil.ReverseProxy
+	port      string
+	scripts   map[string]string
+	vendorJs  []string
+	vendorCss []string
+)
 
-const reloadScript = `
+func reloadScript() string {
+	return `
 <script type='text/javascript'>
-    var livereloadWebSocket = new WebSocket("ws://localhost:3000/reload/");
+    var livereloadWebSocket = new WebSocket("ws://localhost:` + port + `/reload/");
     livereloadWebSocket.onmessage = function(msg) {
         livereloadWebSocket.close();
         window.location.reload(true);
@@ -29,13 +36,20 @@ const reloadScript = `
     livereloadWebSocket.onerror = function(err) { console.log('[ws] error', err); };
 </script>
 `
+}
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
+	log.Println(proxy)
+	if r.URL.Path[0:] != "/" && proxy != nil {
+		proxy.ServeHTTP(w, r)
+		return
+	}
+
 	file, err := ioutil.ReadFile("app/index.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	fmt.Fprintf(w, reloadScript+string(file))
+	fmt.Fprintf(w, reloadScript()+string(file))
 }
 
 func handleAssets(w http.ResponseWriter, r *http.Request) {
@@ -73,8 +87,19 @@ func handleAssets(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func StartServer(port string, fileC chan *File) {
+func StartServer(portt string, prox string, fileC chan *File) {
 	log.Println(Color("[server]", "green"), "Starting server on port", port)
+
+	port = portt
+
+	if prox != "" {
+		p, err := url.Parse(prox)
+		if err != nil {
+			log.Fatal("Error parsing proxy URL", err)
+		}
+
+		proxy = httputil.NewSingleHostReverseProxy(p)
+	}
 
 	scripts = make(map[string]string)
 	vendorJs, _ = getVendors("js")
@@ -87,7 +112,6 @@ func StartServer(port string, fileC chan *File) {
 	http.HandleFunc("/", handleIndex)
 
 	http.ListenAndServe(":"+port, nil)
-
 }
 
 func getVendors(kind string) (scripts []string, err error) {
